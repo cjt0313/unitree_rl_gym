@@ -2,7 +2,7 @@ from .base_config import BaseConfig
 
 class LeggedRobotCfg(BaseConfig):
     class env:
-        num_envs = 4096
+        num_envs = 2048
         num_observations = 48
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 12
@@ -43,8 +43,8 @@ class LeggedRobotCfg(BaseConfig):
         resampling_time = 10. # time before command are changed[s]
         heading_command = True # if true: compute ang vel command from heading error
         class ranges:
-            lin_vel_x = [-1.0, 1.0] # min max [m/s]
-            lin_vel_y = [-1.0, 1.0]   # min max [m/s]
+            lin_vel_x = [-1.0, 1] # min max [m/s]
+            lin_vel_y = [-1.0, 1]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
 
@@ -77,7 +77,7 @@ class LeggedRobotCfg(BaseConfig):
         collapse_fixed_joints = True # merge bodies connected by fixed joints. Specific fixed joints can be kept by adding " <... dont_collapse="true">
         fix_base_link = False # fixe the base of the robot
         default_dof_drive_mode = 3 # see GymDofDriveModeFlags (0 is none, 1 is pos tgt, 2 is vel tgt, 3 effort)
-        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
+        self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
         replace_cylinder_with_capsule = True # replace collision cylinders with capsules, leads to faster/more stable simulation
         flip_visual_attachments = True # Some .obj meshes must be flipped from y-up to z-up
         
@@ -171,7 +171,7 @@ class LeggedRobotCfg(BaseConfig):
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class LeggedRobotCfgPPO(BaseConfig):
-    seed = 1
+    seed = 42
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0
@@ -202,10 +202,10 @@ class LeggedRobotCfgPPO(BaseConfig):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 1500 # number of policy updates
+        max_iterations = 40000 # number of policy updates
 
         # logging
-        save_interval = 50 # check for potential saves every this many iterations
+        save_interval = 500 # check for potential saves every this many iterations
         experiment_name = 'test'
         run_name = ''
         # load and resume
