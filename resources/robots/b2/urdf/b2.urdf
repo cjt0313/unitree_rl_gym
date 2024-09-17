@@ -535,7 +535,8 @@
   </link>
   <joint
     name="FL_foot_joint"
-    type="fixed">
+    type="fixed"
+    dont_collapse="true">
     <origin
       xyz="0 0 -0.35"
       rpy="0 0 0" />
@@ -829,7 +830,8 @@
   </link>
   <joint
     name="FR_foot_joint"
-    type="fixed">
+    type="fixed"
+    dont_collapse="true">
     <origin
       xyz="0 0 -0.35"
       rpy="0 0 0" />
@@ -1122,7 +1124,8 @@
   </link>
   <joint
     name="RL_foot_joint"
-    type="fixed">
+    type="fixed"
+    dont_collapse="true">
     <origin
       xyz="0 0 -0.35"
       rpy="0 0 0" />
@@ -1415,7 +1418,8 @@
   </link>
   <joint
     name="RR_foot_joint"
-    type="fixed">
+    type="fixed"
+    dont_collapse="true">
     <origin
       xyz="0 -8.6984E-05 -0.35"
       rpy="0 0 0" />
@@ -1724,6 +1728,77 @@
       <inertia ixx="0.00018328" ixy="-1.22e-06" ixz="-5.4e-07" iyy="0.0001475" iyz="-8e-08" izz="0.0001468"/>
     </inertial>
   </link>
+  
+<joint name="gripperStator" type="fixed">
+  <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>
+  <parent link="link06"/>
+  <child link="gripperStator"/>
+</joint>
+
+<link name="gripperStator">
+    <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <mesh filename="../dae/z1_GripperStator.dae" scale="1 1 1"/>
+        </geometry>
+    </visual>
+    <!-- <collision>
+        <geometry>
+            <cylinder length="0.051" radius="0.0325"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+    </collision> -->
+    <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <mesh filename="../dae/z1_GripperStator.dae" scale="1 1 1"/>
+        </geometry>
+    </collision>
+
+    <inertial>
+        <origin rpy="0 0 0" xyz="0.04764427 -0.00035819 -0.00249162"/>
+        <mass value="0.52603655"/>
+        <inertia
+            ixx="0.00038683" ixy="0.00000359" ixz="-0.00007662"
+            iyy="0.00068614" iyz="-0.00000209"
+            izz="0.00066293"/>
+    </inertial>
+</link>
+
+<joint name="jointGripper" type="fixed">
+    <origin rpy="0 0 0" xyz="0.049 0.0 0"/>
+    <parent link="gripperStator"/>
+    <child link="gripperMover"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="1.0" friction="0.0"/>
+    <limit effort="30.0" velocity="10" lower="-1.57" upper="0.0"/>
+</joint>
+
+<link name="gripperMover">
+    <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <mesh filename="../dae/z1_GripperMover.dae" scale="1 1 1"/>
+        </geometry>
+    </visual>
+    <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <mesh filename="../dae/z1_GripperMover.dae" scale="1 1 1"/>
+        </geometry>
+    </collision>
+    <inertial>
+        <origin rpy="0 0 0" xyz="0.01320633 0.00476708 0.00380534"/>
+        <mass value="0.27621302"/>
+        <inertia
+            ixx="0.00017716" ixy="-0.00001683" ixz="0.00001786"
+            iyy="0.00026787" iyz="-0.00000262"
+            izz="0.00035728"/>
+    </inertial>
+</link>
+
+  
+  
   <transmission name="JointTrans1">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="joint1">
