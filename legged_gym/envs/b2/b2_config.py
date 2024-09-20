@@ -37,14 +37,14 @@ class b2RoughCfg( LeggedRobotCfg ):
         name = "b2"
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
-        terminate_after_contacts_on = ["base"]
-        self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
+        terminate_after_contacts_on = ["base", "hip"]
+        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.5
+        base_height_target = 0.6
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -0.00002
+            torques = -0.0000002
             dof_pos_limits = -10.0
 
 class b2RoughCfgPPO( LeggedRobotCfgPPO ):
