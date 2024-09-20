@@ -2,7 +2,7 @@ from .base_config import BaseConfig
 
 class LeggedRobotCfg(BaseConfig):
     class env:
-        num_envs = 2048
+        num_envs = 8192
         num_observations = 48
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 12
@@ -43,8 +43,8 @@ class LeggedRobotCfg(BaseConfig):
         resampling_time = 10. # time before command are changed[s]
         heading_command = True # if true: compute ang vel command from heading error
         class ranges:
-            lin_vel_x = [-0.4, 0.4] # min max [m/s]
-            lin_vel_y = [-0.1, -0.1]   # min max [m/s]
+            lin_vel_x = [-1.2, 1.2] # min max [m/s]
+            lin_vel_y = [-0.35, 0.35]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
 
@@ -90,39 +90,40 @@ class LeggedRobotCfg(BaseConfig):
         thickness = 0.01
 
     class domain_rand:
-        randomize_friction = False
+        randomize_friction = True
         friction_range = [1, 2.25]
         randomize_base_mass = False
         added_mass_range = [-1., 1.]
-        push_robots = False
+        push_robots = True
         push_interval_s = 15
-        max_push_vel_xy = 1.
+        max_push_vel_xy = 0.5
 
     class rewards:
         class scales:
-            termination = -100.0
-            tracking_lin_vel = 15.0
-            tracking_ang_vel = 10.0
-            lin_vel_z = -2
-            ang_vel_xy = -0.05
+            termination = -40.0
+            continuation = 1e-3
+            tracking_lin_vel = 1.50
+            tracking_ang_vel = 1.0
+            lin_vel_z = -0.01
+            ang_vel_xy = -0.02
             orientation = -0.
-            torques = -0.000002
+            torques = -0.000001
             dof_vel = -0.
             dof_acc = -2e-7
-            base_height = -5
-            feet_air_time =  3.0
+            base_height = -2
+            feet_air_time =  1.0
             collision = -20.
             stumble = -0.01
-            action_rate = -0.01
-            stand_still = -0
+            action_rate = -0.005
+            stand_still = -0.05
 
-        only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
+        only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
         soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
         soft_dof_vel_limit = 1.
         soft_torque_limit = 1.
         base_height_target = 0.5
-        max_contact_force = 500. # forces above this value are penalized
+        max_contact_force = 1000. # forces above this value are penalized
 
     class normalization:
         class obs_scales:
@@ -152,7 +153,7 @@ class LeggedRobotCfg(BaseConfig):
         lookat = [11., 5, 3]  # [m]
 
     class sim:
-        dt =  0.002
+        dt =  0.005
         substeps = 1
         gravity = [0., 0. ,-9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z
@@ -191,9 +192,9 @@ class LeggedRobotCfgPPO(BaseConfig):
         entropy_coef = 0.01
         num_learning_epochs = 5
         num_mini_batches = 4 # mini batch size = num_envs*nsteps / nminibatches
-        learning_rate = 1.e-3 #5.e-4
+        learning_rate = 5.e-4 #5.e-4
         schedule = 'adaptive' # could be adaptive, fixed
-        gamma = 0.95
+        gamma = 0.97
         lam = 0.95
         desired_kl = 0.01
         max_grad_norm = 1.
@@ -201,15 +202,15 @@ class LeggedRobotCfgPPO(BaseConfig):
     class runner:
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
-        num_steps_per_env = 24 # per iteration
+        num_steps_per_env =36 # per iteration
         max_iterations = 100000 # number of policy updates
 
         # logging
-        save_interval = 1000 # check for potential saves every this many iterations
+        save_interval = 250 # check for potential saves every this many iterations
         experiment_name = 'test'
         run_name = ''
         # load and resume
-        resume = True
+        resume = False
         load_run = -1 # -1 = last run
         checkpoint = -1 # -1 = last saved model
         resume_path = None # updated from load_run and chkpt

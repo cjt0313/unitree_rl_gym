@@ -172,6 +172,10 @@ class LeggedRobot(BaseTask):
             rew = self._reward_termination() * self.reward_scales["termination"]
             self.rew_buf += rew
             self.episode_sums["termination"] += rew
+        if "continuation" in self.reward_scales:
+            rew = self._reward_continuation() * self.reward_scales["continuation"]
+            self.rew_buf += rew
+            self.episode_sums["continuation"] += rew
     
     def compute_observations(self):
         """ Computes observations
@@ -184,6 +188,17 @@ class LeggedRobot(BaseTask):
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions
                                     ),dim=-1)
+        # print(f"obs: dim", self.obs_buf.shape)
+        # print("----------------------------------------")
+        # print(f"self.base_lin_vel  ",self.base_lin_vel)
+        # print(f"self.base_ang_vel  ",self.base_ang_vel)
+        # print(f"self.projected_gravity",self.projected_gravity)
+        # print(f"(self.dof_pos   ",self.dof_pos)
+        # print(f" self.default_dof_pos   ",self.default_dof_pos)
+        # print(f"self.dof_vel   ",self.dof_vel)
+        # print(f"self.commands[:, :3]   ",self.commands[:, :3])
+        # print(f"self.commands    ",self.commands)
+        # print(f"self.actions", self.actions)
         # add perceptive inputs if not blind
         # add noise if needed
         if self.add_noise:
@@ -378,6 +393,7 @@ class LeggedRobot(BaseTask):
         """
         # If the tracking reward is above 80% of the maximum, increase the range of commands
         if torch.mean(self.episode_sums["tracking_lin_vel"][env_ids]) / self.max_episode_length > 0.8 * self.reward_scales["tracking_lin_vel"]:
+            print("limit achieved")
             self.command_ranges["lin_vel_x"][0] = np.clip(self.command_ranges["lin_vel_x"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
             self.command_ranges["lin_vel_x"][1] = np.clip(self.command_ranges["lin_vel_x"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
 
@@ -661,7 +677,9 @@ class LeggedRobot(BaseTask):
     def _reward_termination(self):
         # Terminal reward / penalty
         return self.reset_buf * ~self.time_out_buf
-    
+    def _reward_continuation(self):
+        # Terminal reward / penalty
+        return ~self.time_out_buf 
     def _reward_dof_pos_limits(self):
         # Penalize dof positions too close to the limit
         out_of_limits = -(self.dof_pos - self.dof_pos_limits[:, 0]).clip(max=0.) # lower limit
@@ -695,8 +713,9 @@ class LeggedRobot(BaseTask):
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
-        thr = torch.clip(self.feet_air_time, 0.3)
-        rew_airTime = torch.sum(thr * first_contact, dim=1) # reward only on first contact with the ground
+        # reward for regular walking pattern, 0.5s here is a tmp. magic num.
+        thr = self.feet_air_time < 0.5
+        rew_airTime = torch.sum(self.feet_air_time * first_contact * thr, dim=1)
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
